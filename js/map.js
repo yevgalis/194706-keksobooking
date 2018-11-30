@@ -68,7 +68,7 @@ var generateObject = function (num) {
   var locationX = getRandomNumber(MIN_LOCATION_X, MAX_LOCATION_X);
   var locationY = getRandomNumber(MIN_LOCATION_Y, MAX_LOCATION_Y);
 
-  var advertisementItem = {
+  return {
     'author': {
       'avatar': 'img/avatars/user0' + num + '.png'
     },
@@ -90,8 +90,6 @@ var generateObject = function (num) {
       'y': locationY
     }
   };
-
-  return advertisementItem;
 };
 
 var generateArrayObjects = function (num) {
@@ -132,10 +130,10 @@ var createMapPins = function () {
 };
 
 // CREATE MAP CARDS
-var translateAppartmentType = function (argument) {
+var translateAppartmentType = function (appartmentType) {
   var resultType;
 
-  switch (argument.toLowerCase()) {
+  switch (appartmentType.toLowerCase()) {
     case 'flat':
       resultType = 'Квартира';
       break;
@@ -153,13 +151,12 @@ var translateAppartmentType = function (argument) {
   return resultType;
 };
 
-var createFeatureItems = function (arr) {
+var createFeatureItems = function (features) {
   var fragment = document.createDocumentFragment();
 
-  for (var i = 0; i < arr.length; i++) {
+  for (var i = 0; i < features.length; i++) {
     var featureItem = document.createElement('li');
-    featureItem.classList.add('popup__feature');
-    featureItem.classList.add('popup__feature--' + arr[i]);
+    featureItem.classList.add('popup__feature', 'popup__feature--' + features[i]);
     fragment.appendChild(featureItem);
   }
 
