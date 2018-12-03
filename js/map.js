@@ -1,5 +1,14 @@
 'use strict';
 
+var map = document.querySelector('.map');
+var mapPins = map.querySelector('.map__pins');
+var mainMapPin = mapPins.querySelector('.map__pin--main');
+var mapFiltersForm = map.querySelector('.map__filters');
+var mapFiltersFormSelects = mapFiltersForm.querySelectorAll('.map__filter');
+var mapFiltersFormFieldset = mapFiltersForm.querySelector('.map__features');
+var adForm = document.querySelector('.ad-form');
+var adFormFieldsets = adForm.querySelectorAll('fieldset');
+var adFormAddress = adForm.querySelector('#address');
 var APPARTMENT_TITLES = ['Большая уютная квартира', 'Маленькая неуютная квартира', 'Огромный прекрасный дворец', 'Маленький ужасный дворец', 'Красивый гостевой домик', 'Некрасивый негостеприимный домик', 'Уютное бунгало далеко от моря', 'Неуютное бунгало по колено в воде'];
 var appartmentTitlesCopy = APPARTMENT_TITLES.slice(); // To save the original array
 var APPARTMENT_TYPES = ['palace', 'flat', 'house', 'bungalo'];
@@ -13,12 +22,12 @@ var MIN_ROOMS = 1;
 var MAX_ROOMS = 5;
 var MIN_GUESTS = 0;
 var MAX_GUESTS = 10;
-var map = document.querySelector('.map');
-var mapPins = document.querySelector('.map__pins');
 var MIN_LOCATION_X = 0;
 var MAX_LOCATION_X = mapPins.clientWidth;
 var MIN_LOCATION_Y = 130;
 var MAX_LOCATION_Y = 630;
+var MAIN_MAP_PIN_X = Math.round((MAX_LOCATION_X - MIN_LOCATION_X) / 2 - mainMapPin.clientWidth / 2);
+var MAIN_MAP_PIN_Y = Math.round((MAX_LOCATION_Y - MIN_LOCATION_Y) / 2 - mainMapPin.clientHeight / 2);
 
 var getRandomNumber = function (min, max) {
   return Math.round(Math.random() * (max - min) + min);
@@ -102,8 +111,48 @@ var generateArrayObjects = function (num) {
   return array;
 };
 
-// GENERATING ARRAY OF OBJECTS
 var rentalAdvertisements = generateArrayObjects(NUMBER_OF_OBJECTS);
+
+// WORKING WITH THE MAP
+var setMainPinAddress = function () {
+  adFormAddress.value = MAIN_MAP_PIN_X + ', ' + MAIN_MAP_PIN_Y; // Или здесь надо использовать поиск через getBoundingClientRect() только относительно родителя, а не вьюпорта?
+};
+
+var manageFormInputs = function (formElements, disable) {
+  for (var i = 0; i < formElements.length; i++) {
+    formElements[i].disabled = disable;
+  }
+};
+
+var deletePreviousCards = function () {
+  var cards = document.querySelectorAll('.map__card');
+
+  for (var i = 0; i < cards.length; i++) {
+    cards[i].remove();
+  }
+};
+
+var getParent = function (element) {
+  return element.parentElement || element.parentNode;
+};
+
+var onClosePopupClick = function (evt) {
+  getParent(evt.target).remove();
+};
+
+var renderElement = function (parent, element) {
+  parent.appendChild(element);
+};
+
+var onMainPinDrag = function () {
+  map.classList.remove('map--faded');
+  adForm.classList.remove('ad-form--disabled');
+  manageFormInputs(mapFiltersFormSelects, false);
+  mapFiltersFormFieldset.disabled = false;
+  manageFormInputs(adFormFieldsets, false);
+  renderElement(mapPins, createMapPins());
+  setMainPinAddress();
+};
 
 // CREATE MAP PINS
 var generatePin = function (source, num) {
@@ -114,6 +163,11 @@ var generatePin = function (source, num) {
   newPin.style.top = (rentalAdvertisements[num].location.y - newPinHeight) + 'px';
   newPin.children[0].src = rentalAdvertisements[num].author.avatar;
   newPin.children[0].alt = rentalAdvertisements[num].offer.title;
+
+  newPin.addEventListener('click', function () {
+    deletePreviousCards();
+    renderElement(map, createMapCard(num));
+  });
 
   return newPin;
 };
@@ -177,6 +231,8 @@ var createPhotoItems = function (arr, source) {
 
 var createMapCard = function (index) {
   var cardElement = document.querySelector('#card').content.querySelector('.map__card').cloneNode(true);
+  var cardAvatar = cardElement.querySelector('.popup__avatar');
+  var cardClose = cardElement.querySelector('.popup__close');
   var cardTitle = cardElement.querySelector('.popup__title');
   var cardAddress = cardElement.querySelector('.popup__text--address');
   var cardPrice = cardElement.querySelector('.popup__text--price');
@@ -188,6 +244,7 @@ var createMapCard = function (index) {
   var cardPhotosList = cardElement.querySelector('.popup__photos');
   var cardPhoto = cardElement.querySelector('.popup__photo');
 
+  cardAvatar.src = rentalAdvertisements[index].author.avatar;
   cardTitle.textContent = rentalAdvertisements[index].offer.title;
   cardAddress.textContent = rentalAdvertisements[index].offer.address;
   cardPrice.innerHTML = rentalAdvertisements[index].offer.price + '&#x20bd;<span>/ночь</span>';
@@ -199,15 +256,15 @@ var createMapCard = function (index) {
   cardDescription.textContent = rentalAdvertisements[index].offer.description;
   cardPhotosList.innerHTML = '';
   cardPhotosList.appendChild(createPhotoItems(rentalAdvertisements[index].offer.photos, cardPhoto));
+  cardClose.addEventListener('click', onClosePopupClick);
 
   return cardElement;
 };
 
-// RENDER ELEMENTS ON THE PAGE
-var renderElement = function (parent, element) {
-  parent.appendChild(element);
-};
+// DISABLE FORM INPUTS WHEN NOT ACTIVE
+manageFormInputs(mapFiltersFormSelects, true);
+mapFiltersFormFieldset.disabled = true;
+manageFormInputs(adFormFieldsets, true);
 
-// ADDING ELEMENTS TO DOM
-renderElement(mapPins, createMapPins());
-renderElement(map, createMapCard(0));
+// ADD LISTENER FOR ACTIVATING MAP
+mainMapPin.addEventListener('mouseup', onMainPinDrag);
