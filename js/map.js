@@ -1,16 +1,6 @@
 'use strict';
 
-var map = document.querySelector('.map');
-var mapPins = map.querySelector('.map__pins');
-var mainMapPin = mapPins.querySelector('.map__pin--main');
-var mapFiltersForm = map.querySelector('.map__filters');
-var mapFiltersFormSelects = mapFiltersForm.querySelectorAll('.map__filter');
-var mapFiltersFormFieldset = mapFiltersForm.querySelector('.map__features');
-var adForm = document.querySelector('.ad-form');
-var adFormFieldsets = adForm.querySelectorAll('fieldset');
-var adFormAddress = adForm.querySelector('#address');
 var APPARTMENT_TITLES = ['Большая уютная квартира', 'Маленькая неуютная квартира', 'Огромный прекрасный дворец', 'Маленький ужасный дворец', 'Красивый гостевой домик', 'Некрасивый негостеприимный домик', 'Уютное бунгало далеко от моря', 'Неуютное бунгало по колено в воде'];
-var appartmentTitlesCopy = APPARTMENT_TITLES.slice(); // To save the original array
 var APPARTMENT_TYPES = ['palace', 'flat', 'house', 'bungalo'];
 var CHECK_IN_OUT_TIMES = ['12:00', '13:00', '14:00'];
 var APPARTMENT_FEATURES = ['wifi', 'dishwasher', 'parking', 'washer', 'elevator', 'conditioner'];
@@ -22,12 +12,25 @@ var MIN_ROOMS = 1;
 var MAX_ROOMS = 5;
 var MIN_GUESTS = 0;
 var MAX_GUESTS = 10;
+var map = document.querySelector('.map');
+var mapPins = map.querySelector('.map__pins');
 var MIN_LOCATION_X = 0;
 var MAX_LOCATION_X = mapPins.clientWidth;
 var MIN_LOCATION_Y = 130;
 var MAX_LOCATION_Y = 630;
-var MAIN_MAP_PIN_X = Math.round((MAX_LOCATION_X - MIN_LOCATION_X) / 2 - mainMapPin.clientWidth / 2);
-var MAIN_MAP_PIN_Y = Math.round((MAX_LOCATION_Y - MIN_LOCATION_Y) / 2 - mainMapPin.clientHeight / 2);
+var ESC_KEYCODE = 27;
+var appartmentTitlesCopy = APPARTMENT_TITLES.slice(); // To save original array
+var mainMapPin = mapPins.querySelector('.map__pin--main');
+var mapFiltersForm = map.querySelector('.map__filters');
+var mapFiltersFormSelects = mapFiltersForm.querySelectorAll('.map__filter');
+var mapFiltersFormFieldset = mapFiltersForm.querySelector('.map__features');
+var adForm = document.querySelector('.ad-form');
+var adFormFieldsets = adForm.querySelectorAll('fieldset');
+var adFormAddress = adForm.querySelector('#address');
+var mapPinsPosition = mapPins.getBoundingClientRect();
+var mainMapPinPosition = mainMapPin.getBoundingClientRect();
+var MAIN_MAP_PIN_X = mainMapPinPosition.left - mapPinsPosition.left;
+var MAIN_MAP_PIN_Y = mainMapPinPosition.top - mapPinsPosition.top;
 
 var getRandomNumber = function (min, max) {
   return Math.round(Math.random() * (max - min) + min);
@@ -118,26 +121,18 @@ var setMainPinAddress = function () {
   adFormAddress.value = MAIN_MAP_PIN_X + ', ' + MAIN_MAP_PIN_Y; // Или здесь надо использовать поиск через getBoundingClientRect() только относительно родителя, а не вьюпорта?
 };
 
-var manageFormInputs = function (formElements, disable) {
+var manageFormInputs = function (formElements, isDisabled) {
   for (var i = 0; i < formElements.length; i++) {
-    formElements[i].disabled = disable;
+    formElements[i].disabled = isDisabled;
   }
 };
 
-var deletePreviousCards = function () {
-  var cards = document.querySelectorAll('.map__card');
+var closeCard = function () {
+  var card = document.querySelector('.map__card');
 
-  for (var i = 0; i < cards.length; i++) {
-    cards[i].remove();
+  if (card) {
+    card.remove();
   }
-};
-
-var getParent = function (element) {
-  return element.parentElement || element.parentNode;
-};
-
-var onClosePopupClick = function (evt) {
-  getParent(evt.target).remove();
 };
 
 var renderElement = function (parent, element) {
@@ -152,24 +147,37 @@ var onMainPinDrag = function () {
   manageFormInputs(adFormFieldsets, false);
   renderElement(mapPins, createMapPins());
   setMainPinAddress();
+  mainMapPin.removeEventListener('mouseup', onMainPinDrag);
 };
 
 // CREATE MAP PINS
-var generatePin = function (source, num) {
-  var newPin = source.cloneNode(true);
-  var newPinWidth = source.children[0].width;
-  var newPinHeight = source.children[0].height;
-  newPin.style.left = (rentalAdvertisements[num].location.x - newPinWidth / 2) + 'px';
-  newPin.style.top = (rentalAdvertisements[num].location.y - newPinHeight) + 'px';
-  newPin.children[0].src = rentalAdvertisements[num].author.avatar;
-  newPin.children[0].alt = rentalAdvertisements[num].offer.title;
+var generatePin = function (pinTemplate, advertismentItem) {
+  var newPin = pinTemplate.cloneNode(true);
+  var newPinWidth = pinTemplate.children[0].width;
+  var newPinHeight = pinTemplate.children[0].height;
+  newPin.style.left = (advertismentItem.location.x - newPinWidth / 2) + 'px';
+  newPin.style.top = (advertismentItem.location.y - newPinHeight) + 'px';
+  newPin.children[0].src = advertismentItem.author.avatar;
+  newPin.children[0].alt = advertismentItem.offer.title;
 
   newPin.addEventListener('click', function () {
-    deletePreviousCards();
-    renderElement(map, createMapCard(num));
+    closeCard();
+    renderMapCard(advertismentItem);
   });
 
   return newPin;
+};
+
+var renderMapCard = function (cardItem) {
+  renderElement(map, createMapCard(cardItem));
+  document.body.addEventListener('keydown', onEscDown);
+};
+
+var onEscDown = function (evt) {
+  if (evt.keyCode === ESC_KEYCODE) {
+    closeCard();
+    document.body.removeEventListener('keydown', onEscDown); // Так наверно плохо?)
+  }
 };
 
 var createMapPins = function () {
@@ -177,7 +185,7 @@ var createMapPins = function () {
   var fragment = document.createDocumentFragment();
 
   for (var i = 0; i < rentalAdvertisements.length; i++) {
-    fragment.appendChild(generatePin(pinTemplate, i));
+    fragment.appendChild(generatePin(pinTemplate, rentalAdvertisements[i]));
   }
 
   return fragment;
@@ -229,7 +237,7 @@ var createPhotoItems = function (arr, source) {
   return fragment;
 };
 
-var createMapCard = function (index) {
+var createMapCard = function (cardItem) {
   var cardElement = document.querySelector('#card').content.querySelector('.map__card').cloneNode(true);
   var cardAvatar = cardElement.querySelector('.popup__avatar');
   var cardClose = cardElement.querySelector('.popup__close');
@@ -244,19 +252,19 @@ var createMapCard = function (index) {
   var cardPhotosList = cardElement.querySelector('.popup__photos');
   var cardPhoto = cardElement.querySelector('.popup__photo');
 
-  cardAvatar.src = rentalAdvertisements[index].author.avatar;
-  cardTitle.textContent = rentalAdvertisements[index].offer.title;
-  cardAddress.textContent = rentalAdvertisements[index].offer.address;
-  cardPrice.innerHTML = rentalAdvertisements[index].offer.price + '&#x20bd;<span>/ночь</span>';
-  cardType.textContent = translateAppartmentType(rentalAdvertisements[index].offer.type);
-  cardCapacity.textContent = rentalAdvertisements[index].offer.rooms + ' комнаты для ' + rentalAdvertisements[index].offer.guests + ' гостей';
-  cardCheckInOut.textContent = 'Заезд после ' + rentalAdvertisements[index].offer.checkin + ', выезд до ' + rentalAdvertisements[index].offer.checkout;
+  cardAvatar.src = cardItem.author.avatar;
+  cardTitle.textContent = cardItem.offer.title;
+  cardAddress.textContent = cardItem.offer.address;
+  cardPrice.innerHTML = cardItem.offer.price + '&#x20bd;<span>/ночь</span>';
+  cardType.textContent = translateAppartmentType(cardItem.offer.type);
+  cardCapacity.textContent = cardItem.offer.rooms + ' комнаты для ' + cardItem.offer.guests + ' гостей';
+  cardCheckInOut.textContent = 'Заезд после ' + cardItem.offer.checkin + ', выезд до ' + cardItem.offer.checkout;
   cardFeatures.innerHTML = '';
-  cardFeatures.appendChild(createFeatureItems(rentalAdvertisements[index].offer.features));
-  cardDescription.textContent = rentalAdvertisements[index].offer.description;
+  cardFeatures.appendChild(createFeatureItems(cardItem.offer.features));
+  cardDescription.textContent = cardItem.offer.description;
   cardPhotosList.innerHTML = '';
-  cardPhotosList.appendChild(createPhotoItems(rentalAdvertisements[index].offer.photos, cardPhoto));
-  cardClose.addEventListener('click', onClosePopupClick);
+  cardPhotosList.appendChild(createPhotoItems(cardItem.offer.photos, cardPhoto));
+  cardClose.addEventListener('click', closeCard);
 
   return cardElement;
 };
