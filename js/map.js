@@ -12,6 +12,8 @@ var MIN_ROOMS = 1;
 var MAX_ROOMS = 5;
 var MIN_GUESTS = 0;
 var MAX_GUESTS = 10;
+var PIN_WIDTH = 50;
+var PIN_HEIGHT = 70;
 var map = document.querySelector('.map');
 var mapPins = map.querySelector('.map__pins');
 var MIN_LOCATION_X = 0;
@@ -153,18 +155,17 @@ var onMainPinDrag = function () {
 // CREATE MAP PINS
 var generatePin = function (pinTemplate, advertisementItem) {
   var newPin = pinTemplate.cloneNode(true);
-  var newPinWidth = newPin.querySelector('img').width;
-  var newPinHeight = newPin.querySelector('img').height;
-  newPin.style.left = (advertisementItem.location.x - newPinWidth / 2) + 'px';
-  newPin.style.top = (advertisementItem.location.y - newPinHeight) + 'px';
-  newPin.querySelector('img').src = advertisementItem.author.avatar;
-  newPin.querySelector('img').alt = advertisementItem.offer.title;
+  var newPinImg = newPin.querySelector('img');
+  newPin.style.left = (advertisementItem.location.x - PIN_WIDTH / 2) + 'px';
+  newPin.style.top = (advertisementItem.location.y - PIN_HEIGHT) + 'px';
+  newPinImg.src = advertisementItem.author.avatar;
+  newPinImg.alt = advertisementItem.offer.title;
 
-  newPin.addEventListener('click', function (evt) {
-    if (!clickedPin || clickedPin !== evt.target) {
+  newPin.addEventListener('click', function () {
+    if (!clickedPin || clickedPin !== newPin) {
       closeCard();
       renderMapCard(advertisementItem);
-      clickedPin = evt.target;
+      clickedPin = newPin;
     }
   });
 
@@ -174,13 +175,13 @@ var generatePin = function (pinTemplate, advertisementItem) {
 var renderMapCard = function (cardItem) {
   renderedMapCard = createMapCard(cardItem);
   renderElement(map, renderedMapCard);
-  document.body.addEventListener('keydown', onEscPress);
+  document.body.addEventListener('keydown', onDocumentKeydown);
 };
 
-var onEscPress = function (evt) {
+var onDocumentKeydown = function (evt) {
   if (evt.keyCode === ESC_KEYCODE) {
     closeCard();
-    document.body.removeEventListener('keydown', onEscPress);
+    document.body.removeEventListener('keydown', onDocumentKeydown);
     clickedPin = null;
   }
 };
