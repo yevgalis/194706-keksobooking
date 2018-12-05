@@ -29,8 +29,10 @@ var adFormFieldsets = adForm.querySelectorAll('fieldset');
 var adFormAddress = adForm.querySelector('#address');
 var mapPinsPosition = mapPins.getBoundingClientRect();
 var mainMapPinPosition = mainMapPin.getBoundingClientRect();
-var MAIN_MAP_PIN_X = mainMapPinPosition.left - mapPinsPosition.left;
-var MAIN_MAP_PIN_Y = mainMapPinPosition.top - mapPinsPosition.top;
+var renderedMapCard;
+var clickedPin;
+var MAIN_MAP_PIN_X = Math.floor((mainMapPinPosition.left - mapPinsPosition.left) + mainMapPin.clientWidth / 2);
+var MAIN_MAP_PIN_Y = Math.floor((mainMapPinPosition.top - mapPinsPosition.top) + mainMapPin.clientHeight / 2);
 
 var getRandomNumber = function (min, max) {
   return Math.round(Math.random() * (max - min) + min);
@@ -118,7 +120,7 @@ var rentalAdvertisements = generateArrayObjects(NUMBER_OF_OBJECTS);
 
 // WORKING WITH THE MAP
 var setMainPinAddress = function () {
-  adFormAddress.value = MAIN_MAP_PIN_X + ', ' + MAIN_MAP_PIN_Y; // Или здесь надо использовать поиск через getBoundingClientRect() только относительно родителя, а не вьюпорта?
+  adFormAddress.value = MAIN_MAP_PIN_X + ', ' + MAIN_MAP_PIN_Y;
 };
 
 var manageFormInputs = function (formElements, isDisabled) {
@@ -128,10 +130,8 @@ var manageFormInputs = function (formElements, isDisabled) {
 };
 
 var closeCard = function () {
-  var card = document.querySelector('.map__card');
-
-  if (card) {
-    card.remove();
+  if (renderedMapCard) {
+    renderedMapCard.remove();
   }
 };
 
@@ -151,32 +151,37 @@ var onMainPinDrag = function () {
 };
 
 // CREATE MAP PINS
-var generatePin = function (pinTemplate, advertismentItem) {
+var generatePin = function (pinTemplate, advertisementItem) {
   var newPin = pinTemplate.cloneNode(true);
-  var newPinWidth = pinTemplate.children[0].width;
-  var newPinHeight = pinTemplate.children[0].height;
-  newPin.style.left = (advertismentItem.location.x - newPinWidth / 2) + 'px';
-  newPin.style.top = (advertismentItem.location.y - newPinHeight) + 'px';
-  newPin.children[0].src = advertismentItem.author.avatar;
-  newPin.children[0].alt = advertismentItem.offer.title;
+  var newPinWidth = newPin.querySelector('img').width;
+  var newPinHeight = newPin.querySelector('img').height;
+  newPin.style.left = (advertisementItem.location.x - newPinWidth / 2) + 'px';
+  newPin.style.top = (advertisementItem.location.y - newPinHeight) + 'px';
+  newPin.querySelector('img').src = advertisementItem.author.avatar;
+  newPin.querySelector('img').alt = advertisementItem.offer.title;
 
-  newPin.addEventListener('click', function () {
-    closeCard();
-    renderMapCard(advertismentItem);
+  newPin.addEventListener('click', function (evt) {
+    if (!clickedPin || clickedPin !== evt.target) {
+      closeCard();
+      renderMapCard(advertisementItem);
+      clickedPin = evt.target;
+    }
   });
 
   return newPin;
 };
 
 var renderMapCard = function (cardItem) {
-  renderElement(map, createMapCard(cardItem));
-  document.body.addEventListener('keydown', onEscDown);
+  renderedMapCard = createMapCard(cardItem);
+  renderElement(map, renderedMapCard);
+  document.body.addEventListener('keydown', onEscPress);
 };
 
-var onEscDown = function (evt) {
+var onEscPress = function (evt) {
   if (evt.keyCode === ESC_KEYCODE) {
     closeCard();
-    document.body.removeEventListener('keydown', onEscDown); // Так наверно плохо?)
+    document.body.removeEventListener('keydown', onEscPress);
+    clickedPin = null;
   }
 };
 
