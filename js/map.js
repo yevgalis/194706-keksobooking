@@ -14,6 +14,12 @@ var MIN_GUESTS = 0;
 var MAX_GUESTS = 10;
 var PIN_WIDTH = 50;
 var PIN_HEIGHT = 70;
+var INVALID_FORM_INPUT = '2px solid #ff6547';
+var VALID_FORM_INPUT = 'none';
+var MIN_PRICE_BUNGALO = 0;
+var MIN_PRICE_FLAT = 1000;
+var MIN_PRICE_HOUSE = 5000;
+var MIN_PRICE_PALACE = 10000;
 var map = document.querySelector('.map');
 var mapPins = map.querySelector('.map__pins');
 var MIN_LOCATION_X = 0;
@@ -35,6 +41,14 @@ var renderedMapCard;
 var clickedPin;
 var MAIN_MAP_PIN_X = Math.floor((mainMapPinPosition.left - mapPinsPosition.left) + mainMapPin.clientWidth / 2);
 var MAIN_MAP_PIN_Y = Math.floor((mainMapPinPosition.top - mapPinsPosition.top) + mainMapPin.clientHeight / 2);
+var titleInput = adForm.querySelector('#title');
+var priceInput = adForm.querySelector('#price');
+var typeInput = adForm.querySelector('#type');
+var timeinInput = adForm.querySelector('#timein');
+var timeoutInput = adForm.querySelector('#timeout');
+var roomInput = adForm.querySelector('#room_number');
+var capacityInput = adForm.querySelector('#capacity');
+var submitButton = adForm.querySelector('.ad-form__submit');
 
 var getRandomNumber = function (min, max) {
   return Math.round(Math.random() * (max - min) + min);
@@ -172,11 +186,6 @@ var generatePin = function (pinTemplate, advertisementItem) {
   return newPin;
 };
 
-var renderMapCard = function (cardItem) {
-  renderedMapCard = createMapCard(cardItem);
-  renderElement(map, renderedMapCard);
-  document.body.addEventListener('keydown', onDocumentKeydown);
-};
 
 var onDocumentKeydown = function (evt) {
   if (evt.keyCode === ESC_KEYCODE) {
@@ -275,10 +284,143 @@ var createMapCard = function (cardItem) {
   return cardElement;
 };
 
+var renderMapCard = function (cardItem) {
+  renderedMapCard = createMapCard(cardItem);
+  renderElement(map, renderedMapCard);
+  document.body.addEventListener('keydown', onDocumentKeydown);
+};
+
+// FORM VALIDATION
+var onFormInputValidation = function (evt) {
+  var target = evt.target;
+
+  if (target.validity.tooShort) {
+    target.setCustomValidity('Необходимо ввести не менее ' + target.minLength + ' символов.');
+    target.style.border = INVALID_FORM_INPUT;
+  } else if (target.validity.rangeUnderflow) {
+    target.setCustomValidity('Значение должно быть не меньше ' + target.min);
+    target.style.border = INVALID_FORM_INPUT;
+  } else if (target.validity.rangeOverflow) {
+    target.setCustomValidity('Значение должно быть равно или меньше ' + target.max);
+    target.style.border = INVALID_FORM_INPUT;
+  } else {
+    target.setCustomValidity('');
+    target.style.border = VALID_FORM_INPUT;
+  }
+};
+
+var onFormInputCheckInput = function (evt) {
+  var target = evt.target;
+
+  if (target.validity.tooShort) {
+    target.setCustomValidity('Необходимо ввести не менее ' + target.minLength + ' символов. Введите еще минимум ' + (target.minLength - target.value.length));
+  } else if (target.validity.rangeUnderflow) {
+    target.setCustomValidity('Значение должно быть не меньше ' + target.min);
+  } else if (target.validity.rangeOverflow) {
+    target.setCustomValidity('Значение должно быть равно или меньше ' + target.max);
+  } else {
+    target.setCustomValidity('');
+    target.style.border = VALID_FORM_INPUT;
+  }
+};
+
+var onFormSelectTypeSet = function (evt) {
+  var target = evt.target;
+
+  if (target.value === 'bungalo') {
+    priceInput.min = MIN_PRICE_BUNGALO;
+    priceInput.placeholder = MIN_PRICE_BUNGALO;
+  } else if (target.value === 'flat') {
+    priceInput.min = MIN_PRICE_FLAT;
+    priceInput.placeholder = MIN_PRICE_FLAT;
+  } else if (target.value === 'house') {
+    priceInput.min = MIN_PRICE_HOUSE;
+    priceInput.placeholder = MIN_PRICE_HOUSE;
+  } else if (target.value === 'palace') {
+    priceInput.min = MIN_PRICE_PALACE;
+    priceInput.placeholder = MIN_PRICE_PALACE;
+  }
+};
+
+var onFormSelectTimeSet = function (evt) {
+  var target = evt.target;
+
+  if (target === timeinInput) {
+    timeoutInput.value = target.value;
+  } else if (target === timeoutInput) {
+    timeinInput.value = target.value;
+  }
+};
+
+var onFormEnableSetGuests = function () {
+  if (roomInput.value !== '100') {
+    capacityInput.value = roomInput.value;
+  } else {
+    capacityInput.value = 0;
+  }
+
+  for (var i = 0; i < capacityInput.length; i++) {
+    if (roomInput.value !== '100' && (capacityInput[i].value > roomInput.value || capacityInput[i].value === '0')) {
+      capacityInput[i].disabled = true;
+    } else if (roomInput.value === '100' && capacityInput[i].value !== '0') {
+      capacityInput[i].disabled = true;
+    }
+  }
+};
+
+var onFormSelectRoomSet = function (evt) {
+  var target = evt.target;
+  var disabledOptions = [];
+  var enabledOptions = [];
+
+  for (var i = 0; i < capacityInput.length; i++) {
+    if (target.value !== '100') {
+      if (capacityInput[i].value > target.value || capacityInput[i].value === '0') {
+        capacityInput[i].disabled = true;
+        disabledOptions.push(capacityInput[i].value);
+      } else {
+        capacityInput[i].disabled = false;
+        enabledOptions.push(capacityInput[i].value);
+      }
+    } else {
+      if (capacityInput[i].value !== '0') {
+        capacityInput[i].disabled = true;
+        disabledOptions.push(capacityInput[i].value);
+      } else {
+        capacityInput[i].disabled = false;
+        enabledOptions.push(capacityInput[i].value);
+      }
+    }
+  }
+
+  if (disabledOptions.includes(capacityInput.value)) {
+    capacityInput.value = enabledOptions[0];
+  }
+};
+
+var onFormSubmit = function () {
+  if (adForm.checkValidity()) {
+    adFormAddress.disabled = false;
+  }
+};
+
 // DISABLE FORM INPUTS WHEN NOT ACTIVE
 manageFormInputs(mapFiltersFormSelects, true);
 mapFiltersFormFieldset.disabled = true;
 manageFormInputs(adFormFieldsets, true);
 
-// ADD LISTENER FOR ACTIVATING MAP
+// SET DEFUALT FORM INPUTS VALUES IF NEEDED
+adFormAddress.disabled = true;
+onFormEnableSetGuests();
+
+// ADD LISTENERS
 mainMapPin.addEventListener('mouseup', onMainPinDrag);
+titleInput.addEventListener('invalid', onFormInputValidation);
+titleInput.addEventListener('input', onFormInputCheckInput);
+priceInput.addEventListener('invalid', onFormInputValidation);
+priceInput.addEventListener('input', onFormInputCheckInput);
+typeInput.addEventListener('input', onFormSelectTypeSet);
+timeinInput.addEventListener('input', onFormSelectTimeSet);
+timeoutInput.addEventListener('input', onFormSelectTimeSet);
+roomInput.addEventListener('input', onFormSelectRoomSet);
+submitButton.addEventListener('click', onFormSubmit);
