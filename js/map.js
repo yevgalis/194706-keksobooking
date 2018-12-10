@@ -14,8 +14,8 @@ var MIN_GUESTS = 0;
 var MAX_GUESTS = 10;
 var PIN_WIDTH = 50;
 var PIN_HEIGHT = 70;
-var INVALID_FORM_INPUT = '2px solid #ff6547';
-var VALID_FORM_INPUT = 'none';
+var INVALID_FORM_INPUT_STYLE = '2px solid #ff6547';
+var VALID_FORM_INPUT_STYLE = 'none';
 var MIN_PRICE_BUNGALO = 0;
 var MIN_PRICE_FLAT = 1000;
 var MIN_PRICE_HOUSE = 5000;
@@ -293,53 +293,71 @@ var renderMapCard = function (cardItem) {
 // FORM VALIDATION
 var onFormInputValidation = function (evt) {
   var target = evt.target;
+  var errorMessage;
+  var formStyle;
 
   if (target.validity.tooShort) {
-    target.setCustomValidity('Необходимо ввести не менее ' + target.minLength + ' символов.');
-    target.style.border = INVALID_FORM_INPUT;
+    errorMessage = 'Необходимо ввести не менее ' + target.minLength + ' символов.';
+    formStyle = INVALID_FORM_INPUT_STYLE;
   } else if (target.validity.rangeUnderflow) {
-    target.setCustomValidity('Значение должно быть не меньше ' + target.min);
-    target.style.border = INVALID_FORM_INPUT;
+    errorMessage = 'Значение должно быть не меньше ' + target.min;
+    formStyle = INVALID_FORM_INPUT_STYLE;
   } else if (target.validity.rangeOverflow) {
-    target.setCustomValidity('Значение должно быть равно или меньше ' + target.max);
-    target.style.border = INVALID_FORM_INPUT;
+    errorMessage = 'Значение должно быть равно или меньше ' + target.max;
+    formStyle = INVALID_FORM_INPUT_STYLE;
   } else {
-    target.setCustomValidity('');
-    target.style.border = VALID_FORM_INPUT;
+    errorMessage = '';
+    formStyle = VALID_FORM_INPUT_STYLE;
   }
+
+  target.setCustomValidity(errorMessage);
+  target.style.border = formStyle;
 };
 
 var onFormInputCheckInput = function (evt) {
   var target = evt.target;
+  var errorMessage;
 
   if (target.validity.tooShort) {
-    target.setCustomValidity('Необходимо ввести не менее ' + target.minLength + ' символов. Введите еще минимум ' + (target.minLength - target.value.length));
+    errorMessage = 'Необходимо ввести не менее ' + target.minLength + ' символов. Введите еще минимум ' + (target.minLength - target.value.length);
   } else if (target.validity.rangeUnderflow) {
-    target.setCustomValidity('Значение должно быть не меньше ' + target.min);
+    errorMessage = 'Значение должно быть не меньше ' + target.min;
   } else if (target.validity.rangeOverflow) {
-    target.setCustomValidity('Значение должно быть равно или меньше ' + target.max);
+    errorMessage = 'Значение должно быть равно или меньше ' + target.max;
   } else {
-    target.setCustomValidity('');
-    target.style.border = VALID_FORM_INPUT;
+    errorMessage = '';
+    target.style.border = VALID_FORM_INPUT_STYLE;
   }
+
+  target.setCustomValidity(errorMessage);
 };
 
 var onFormSelectTypeSet = function (evt) {
   var target = evt.target;
+  var minPrice;
+  var pricePlaceholder;
 
-  if (target.value === 'bungalo') {
-    priceInput.min = MIN_PRICE_BUNGALO;
-    priceInput.placeholder = MIN_PRICE_BUNGALO;
-  } else if (target.value === 'flat') {
-    priceInput.min = MIN_PRICE_FLAT;
-    priceInput.placeholder = MIN_PRICE_FLAT;
-  } else if (target.value === 'house') {
-    priceInput.min = MIN_PRICE_HOUSE;
-    priceInput.placeholder = MIN_PRICE_HOUSE;
-  } else if (target.value === 'palace') {
-    priceInput.min = MIN_PRICE_PALACE;
-    priceInput.placeholder = MIN_PRICE_PALACE;
+  switch (target.value) {
+    case 'bungalo':
+      minPrice = MIN_PRICE_BUNGALO;
+      pricePlaceholder = MIN_PRICE_BUNGALO;
+      break;
+    case 'flat':
+      minPrice = MIN_PRICE_FLAT;
+      pricePlaceholder = MIN_PRICE_FLAT;
+      break;
+    case 'house':
+      minPrice = MIN_PRICE_HOUSE;
+      pricePlaceholder = MIN_PRICE_HOUSE;
+      break;
+    case 'palace':
+      minPrice = MIN_PRICE_PALACE;
+      pricePlaceholder = MIN_PRICE_PALACE;
+      break;
   }
+
+  priceInput.min = minPrice;
+  priceInput.placeholder = pricePlaceholder;
 };
 
 var onFormSelectTimeSet = function (evt) {
@@ -360,9 +378,7 @@ var onFormEnableSetGuests = function () {
   }
 
   for (var i = 0; i < capacityInput.length; i++) {
-    if (roomInput.value !== '100' && (capacityInput[i].value > roomInput.value || capacityInput[i].value === '0')) {
-      capacityInput[i].disabled = true;
-    } else if (roomInput.value === '100' && capacityInput[i].value !== '0') {
+    if ((roomInput.value !== '100' && (capacityInput[i].value > roomInput.value || capacityInput[i].value === '0')) || (roomInput.value === '100' && capacityInput[i].value !== '0')) {
       capacityInput[i].disabled = true;
     }
   }
@@ -374,22 +390,12 @@ var onFormSelectRoomSet = function (evt) {
   var enabledOptions = [];
 
   for (var i = 0; i < capacityInput.length; i++) {
-    if (target.value !== '100') {
-      if (capacityInput[i].value > target.value || capacityInput[i].value === '0') {
-        capacityInput[i].disabled = true;
-        disabledOptions.push(capacityInput[i].value);
-      } else {
-        capacityInput[i].disabled = false;
-        enabledOptions.push(capacityInput[i].value);
-      }
+    if ((target.value !== '100' && (capacityInput[i].value > target.value || capacityInput[i].value === '0')) || (target.value === '100' && capacityInput[i].value !== '0')) {
+      capacityInput[i].disabled = true;
+      disabledOptions.push(capacityInput[i].value);
     } else {
-      if (capacityInput[i].value !== '0') {
-        capacityInput[i].disabled = true;
-        disabledOptions.push(capacityInput[i].value);
-      } else {
-        capacityInput[i].disabled = false;
-        enabledOptions.push(capacityInput[i].value);
-      }
+      capacityInput[i].disabled = false;
+      enabledOptions.push(capacityInput[i].value);
     }
   }
 
