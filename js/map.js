@@ -360,22 +360,8 @@ var onFormSelectTypeSet = function (evt) {
   priceInput.placeholder = pricePlaceholder;
 };
 
-// var onFormSelectTimeSet = function (evt) {
-//   var target = evt.target;
-
-//   if (target === timeinInput) {
-//     timeoutInput.value = target.value;
-//   } else if (target === timeoutInput) {
-//     timeinInput.value = target.value;
-//   }
-// };
-
-var onFormSelectTimeInSet = function () {
-  timeoutInput.value = timeinInput.value;
-}
-;
-var onFormSelectTimeOutSet = function () {
-  timeinInput.value = timeoutInput.value;
+var onFormSelectTimeSet = function (suncSelect, targetSelect) {
+  suncSelect.value = targetSelect.value;
 };
 
 var onFormEnableSetGuests = function () {
@@ -434,7 +420,11 @@ titleInput.addEventListener('input', onFormInputCheckInput);
 priceInput.addEventListener('invalid', onFormInputValidation);
 priceInput.addEventListener('input', onFormInputCheckInput);
 typeInput.addEventListener('input', onFormSelectTypeSet);
-timeinInput.addEventListener('input', onFormSelectTimeInSet);
-timeoutInput.addEventListener('input', onFormSelectTimeOutSet);
+timeinInput.addEventListener('input', function () {
+  onFormSelectTimeSet(timeoutInput, timeinInput);
+});
+timeoutInput.addEventListener('input', function () {
+  onFormSelectTimeSet(timeinInput, timeoutInput);
+});
 roomInput.addEventListener('input', onFormSelectRoomSet);
 submitButton.addEventListener('click', onFormSubmit);
