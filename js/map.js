@@ -37,12 +37,8 @@ var mapFiltersFormFieldset = mapFiltersForm.querySelector('.map__features');
 var adForm = document.querySelector('.ad-form');
 var adFormFieldsets = adForm.querySelectorAll('fieldset');
 var adFormAddress = adForm.querySelector('#address');
-// var mapPinsPosition = mapPins.getBoundingClientRect();
-// var mainMapPinPosition = mainMapPin.getBoundingClientRect();
 var renderedMapCard;
 var clickedPin;
-// var MAIN_MAP_PIN_X = Math.floor((mainMapPinPosition.left - mapPinsPosition.left) + MAIN_PIN_WIDTH / 2);
-// var MAIN_MAP_PIN_Y = Math.floor((mainMapPinPosition.top - mapPinsPosition.top) + MAIN_PIN_HEIGHT);
 var titleInput = adForm.querySelector('#title');
 var priceInput = adForm.querySelector('#price');
 var typeInput = adForm.querySelector('#type');
@@ -153,7 +149,7 @@ var renderElement = function (parent, element) {
   parent.appendChild(element);
 };
 
-var onMainPinDown = function (evt) {
+var onMainPinMouseDown = function (evt) {
   evt.preventDefault();
 
   map.classList.remove('map--faded');
@@ -168,7 +164,7 @@ var onMainPinDown = function (evt) {
     y: evt.clientY
   };
 
-  var onMainPinMove = function (moveEvt) {
+  var onMainPinMouseMove = function (moveEvt) {
     moveEvt.preventDefault();
 
     var shift = {
@@ -199,19 +195,20 @@ var onMainPinDown = function (evt) {
     mainMapPin.style.top = topPosition + 'px';
     mainMapPin.style.left = leftPosition + 'px';
 
-    adFormAddress.value = pinCoordinates.x + ', ' + pinCoordinates.y;
+    adFormAddress.value = Math.floor((mainMapPin.offsetLeft + MAIN_PIN_WIDTH / 2)) + ', ' + Math.floor((mainMapPin.offsetTop + MAIN_PIN_HEIGHT));
   };
 
-  var onMainPinUp = function (upEvt) {
+  var onMainPinMouseUp = function (upEvt) {
     upEvt.preventDefault();
 
-    adFormAddress.value = pinCoordinates.x + ', ' + pinCoordinates.y;
-    mainMapPin.removeEventListener('mousemove', onMainPinMove);
-    mainMapPin.removeEventListener('mouseup', onMainPinUp);
+    adFormAddress.value = Math.floor((mainMapPin.offsetLeft + MAIN_PIN_WIDTH / 2)) + ', ' + Math.floor((mainMapPin.offsetTop + MAIN_PIN_HEIGHT));
+
+    document.removeEventListener('mousemove', onMainPinMouseMove);
+    mainMapPin.removeEventListener('mouseup', onMainPinMouseUp);
   };
 
-  mainMapPin.addEventListener('mousemove', onMainPinMove);
-  mainMapPin.addEventListener('mouseup', onMainPinUp);
+  document.addEventListener('mousemove', onMainPinMouseMove);
+  mainMapPin.addEventListener('mouseup', onMainPinMouseUp);
 };
 
 // CREATE MAP PINS
@@ -461,7 +458,7 @@ adFormAddress.disabled = true;
 onFormEnableSetGuests();
 
 // ADD LISTENERS
-mainMapPin.addEventListener('mousedown', onMainPinDown);
+mainMapPin.addEventListener('mousedown', onMainPinMouseDown);
 titleInput.addEventListener('invalid', onFormInputValidation);
 titleInput.addEventListener('input', onFormInputCheckInput);
 priceInput.addEventListener('invalid', onFormInputValidation);
