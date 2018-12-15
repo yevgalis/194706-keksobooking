@@ -14,6 +14,8 @@ var MIN_GUESTS = 0;
 var MAX_GUESTS = 10;
 var PIN_WIDTH = 50;
 var PIN_HEIGHT = 70;
+var MAIN_PIN_WIDTH = 65;
+var MAIN_PIN_HEIGHT = 65;
 var INVALID_FORM_INPUT_STYLE = '2px solid #ff6547';
 var VALID_FORM_INPUT_STYLE = 'none';
 var MIN_PRICE_BUNGALO = 0;
@@ -35,12 +37,8 @@ var mapFiltersFormFieldset = mapFiltersForm.querySelector('.map__features');
 var adForm = document.querySelector('.ad-form');
 var adFormFieldsets = adForm.querySelectorAll('fieldset');
 var adFormAddress = adForm.querySelector('#address');
-var mapPinsPosition = mapPins.getBoundingClientRect();
-var mainMapPinPosition = mainMapPin.getBoundingClientRect();
 var renderedMapCard;
 var clickedPin;
-var MAIN_MAP_PIN_X = Math.floor((mainMapPinPosition.left - mapPinsPosition.left) + mainMapPin.clientWidth / 2);
-var MAIN_MAP_PIN_Y = Math.floor((mainMapPinPosition.top - mapPinsPosition.top) + mainMapPin.clientHeight / 2);
 var titleInput = adForm.querySelector('#title');
 var priceInput = adForm.querySelector('#price');
 var typeInput = adForm.querySelector('#type');
@@ -135,10 +133,6 @@ var generateArrayObjects = function (num) {
 var rentalAdvertisements = generateArrayObjects(NUMBER_OF_OBJECTS);
 
 // WORKING WITH THE MAP
-var setMainPinAddress = function () {
-  adFormAddress.value = MAIN_MAP_PIN_X + ', ' + MAIN_MAP_PIN_Y;
-};
-
 var manageFormInputs = function (formElements, isDisabled) {
   for (var i = 0; i < formElements.length; i++) {
     formElements[i].disabled = isDisabled;
@@ -155,15 +149,66 @@ var renderElement = function (parent, element) {
   parent.appendChild(element);
 };
 
-var onMainPinDrag = function () {
+var onMainPinMouseDown = function (evt) {
+  evt.preventDefault();
+
   map.classList.remove('map--faded');
   adForm.classList.remove('ad-form--disabled');
   manageFormInputs(mapFiltersFormSelects, false);
   mapFiltersFormFieldset.disabled = false;
   manageFormInputs(adFormFieldsets, false);
   renderElement(mapPins, createMapPins());
-  setMainPinAddress();
-  mainMapPin.removeEventListener('mouseup', onMainPinDrag);
+
+  var pinCoordinates = {
+    x: evt.clientX,
+    y: evt.clientY
+  };
+
+  var onDocumentMouseMove = function (moveEvt) {
+    moveEvt.preventDefault();
+
+    var shift = {
+      x: pinCoordinates.x - moveEvt.clientX,
+      y: pinCoordinates.y - moveEvt.clientY
+    };
+
+    pinCoordinates = {
+      x: moveEvt.clientX,
+      y: moveEvt.clientY
+    };
+
+    var topPosition = mainMapPin.offsetTop - shift.y;
+    var leftPosition = mainMapPin.offsetLeft - shift.x;
+
+    if (topPosition < (MIN_LOCATION_Y - MAIN_PIN_HEIGHT)) {
+      topPosition = MIN_LOCATION_Y - MAIN_PIN_HEIGHT;
+    } else if (topPosition > (MAX_LOCATION_Y - MAIN_PIN_HEIGHT)) {
+      topPosition = MAX_LOCATION_Y - MAIN_PIN_HEIGHT;
+    }
+
+    if (leftPosition < (MIN_LOCATION_X - MAIN_PIN_WIDTH / 2)) {
+      leftPosition = MIN_LOCATION_X - MAIN_PIN_WIDTH / 2;
+    } else if (leftPosition > (MAX_LOCATION_X - MAIN_PIN_WIDTH / 2)) {
+      leftPosition = MAX_LOCATION_X - MAIN_PIN_WIDTH / 2;
+    }
+
+    mainMapPin.style.top = topPosition + 'px';
+    mainMapPin.style.left = leftPosition + 'px';
+
+    adFormAddress.value = Math.floor((mainMapPin.offsetLeft + MAIN_PIN_WIDTH / 2)) + ', ' + Math.floor((mainMapPin.offsetTop + MAIN_PIN_HEIGHT));
+  };
+
+  var onDocumentMouseUp = function (upEvt) {
+    upEvt.preventDefault();
+
+    adFormAddress.value = Math.floor((mainMapPin.offsetLeft + MAIN_PIN_WIDTH / 2)) + ', ' + Math.floor((mainMapPin.offsetTop + MAIN_PIN_HEIGHT));
+
+    document.removeEventListener('mousemove', onDocumentMouseMove);
+    document.removeEventListener('mouseup', onDocumentMouseUp);
+  };
+
+  document.addEventListener('mousemove', onDocumentMouseMove);
+  document.addEventListener('mouseup', onDocumentMouseUp);
 };
 
 // CREATE MAP PINS
@@ -185,7 +230,6 @@ var generatePin = function (pinTemplate, advertisementItem) {
 
   return newPin;
 };
-
 
 var onDocumentKeydown = function (evt) {
   if (evt.keyCode === ESC_KEYCODE) {
@@ -414,7 +458,7 @@ adFormAddress.disabled = true;
 onFormEnableSetGuests();
 
 // ADD LISTENERS
-mainMapPin.addEventListener('mouseup', onMainPinDrag);
+mainMapPin.addEventListener('mousedown', onMainPinMouseDown);
 titleInput.addEventListener('invalid', onFormInputValidation);
 titleInput.addEventListener('input', onFormInputCheckInput);
 priceInput.addEventListener('invalid', onFormInputValidation);
