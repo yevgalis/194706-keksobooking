@@ -164,7 +164,7 @@ var onMainPinMouseDown = function (evt) {
     y: evt.clientY
   };
 
-  var onMapMouseMove = function (moveEvt) {
+  var onDocumentMouseMove = function (moveEvt) {
     moveEvt.preventDefault();
 
     var shift = {
@@ -198,17 +198,17 @@ var onMainPinMouseDown = function (evt) {
     adFormAddress.value = Math.floor((mainMapPin.offsetLeft + MAIN_PIN_WIDTH / 2)) + ', ' + Math.floor((mainMapPin.offsetTop + MAIN_PIN_HEIGHT));
   };
 
-  var onMainPinMouseUp = function (upEvt) {
+  var onDocumentMouseUp = function (upEvt) {
     upEvt.preventDefault();
 
     adFormAddress.value = Math.floor((mainMapPin.offsetLeft + MAIN_PIN_WIDTH / 2)) + ', ' + Math.floor((mainMapPin.offsetTop + MAIN_PIN_HEIGHT));
 
-    document.removeEventListener('mousemove', onMapMouseMove);
-    document.removeEventListener('mouseup', onMainPinMouseUp);
+    document.removeEventListener('mousemove', onDocumentMouseMove);
+    document.removeEventListener('mouseup', onDocumentMouseUp);
   };
 
-  document.addEventListener('mousemove', onMapMouseMove);
-  document.addEventListener('mouseup', onMainPinMouseUp);
+  document.addEventListener('mousemove', onDocumentMouseMove);
+  document.addEventListener('mouseup', onDocumentMouseUp);
 };
 
 // CREATE MAP PINS
