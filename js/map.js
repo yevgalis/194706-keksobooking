@@ -13,7 +13,6 @@
 
     map.classList.remove('map--faded');
     window.form.activateForms();
-    // mapPins.appendChild(window.pins.createMapPins());
     mapPins.appendChild(window.pins.create());
 
     var pinCoordinates = {

@@ -15,15 +15,10 @@
     newPinImg.alt = advertisementItem.offer.title;
 
     newPin.addEventListener('click', function () {
-      // if (!window.pins.clickedPin || window.pins.clickedPin !== newPin) {
-      //   window.card.closeCard();
-      //   window.card.renderMapCard(advertisementItem);
-      //   window.pins.clickedPin = newPin;
-      // }
-      if (!window.pins.clicked || window.pins.clicked !== newPin) {
+      if (!window.pins.active || window.pins.active !== newPin) {
         window.card.close();
         window.card.render(advertisementItem);
-        window.pins.clicked = newPin;
+        window.pins.active = newPin;
       }
     });
 
@@ -42,18 +37,11 @@
   };
 
   var resetClickedPin = function () {
-    // window.pins.clickedPin = null;
-    window.pins.clicked = null;
+    window.pins.active = null;
   };
 
-  // window.pins = {
-  //   clickedPin: clickedPin,
-  //   createMapPins: createMapPins,
-  //   resetClickedPin: resetClickedPin
-  // };
-
   window.pins = {
-    clicked: clickedPin,
+    active: clickedPin,
     create: createMapPins,
     reset: resetClickedPin
   };

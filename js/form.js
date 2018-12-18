@@ -178,13 +178,6 @@
   submitButton.addEventListener('click', onFormSubmit);
 
   window.form = {
-    adForm: adForm,
-    adFormAddress: adFormAddress,
-    adFormFieldsets: adFormFieldsets,
-    mapFiltersForm: mapFiltersForm,
-    mapFiltersFormSelects: mapFiltersFormSelects,
-    mapFiltersFormFieldset: mapFiltersFormFieldset,
-    manageFormInputs: manageFormInputs,
     activateForms: activateForms,
     setMapAddress: setAdFormAddress
   };
