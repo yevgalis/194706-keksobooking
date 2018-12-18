@@ -52,7 +52,8 @@
   var closeCard = function () {
     if (renderedMapCard) {
       renderedMapCard.remove();
-      window.pins.resetClickedPin();
+      // window.pins.resetClickedPin();
+      window.pins.reset();
     }
   };
 
@@ -97,13 +98,19 @@
 
   var renderMapCard = function (cardItem) {
     renderedMapCard = createMapCard(cardItem);
-    window.map.appendChild(renderedMapCard);
+    // window.map.appendChild(renderedMapCard);
+    window.map.view.appendChild(renderedMapCard);
     document.body.addEventListener('keydown', onDocumentKeydown);
   };
 
+  // window.card = {
+  //   closeCard: closeCard,
+  //   renderMapCard: renderMapCard
+  // };
+
   window.card = {
-    closeCard: closeCard,
-    renderMapCard: renderMapCard
+    close: closeCard,
+    render: renderMapCard
   };
 
 })();

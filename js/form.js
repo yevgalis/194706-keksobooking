@@ -186,7 +186,7 @@
     mapFiltersFormFieldset: mapFiltersFormFieldset,
     manageFormInputs: manageFormInputs,
     activateForms: activateForms,
-    setAdFormAddress: setAdFormAddress
+    setMapAddress: setAdFormAddress
   };
 
 })();
