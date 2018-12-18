@@ -52,7 +52,7 @@
   var closeCard = function () {
     if (renderedMapCard) {
       renderedMapCard.remove();
-      window.pins.clickedPin = null;
+      window.pins.resetClickedPin();
     }
   };
 
@@ -89,7 +89,7 @@
   };
 
   var onDocumentKeydown = function (evt) {
-    if (evt.keyCode === window.utils.constants.ESC_KEYCODE) {
+    if (evt.keyCode === window.utils.ESC_KEYCODE) {
       closeCard();
       document.body.removeEventListener('keydown', onDocumentKeydown);
     }
@@ -97,7 +97,7 @@
 
   var renderMapCard = function (cardItem) {
     renderedMapCard = createMapCard(cardItem);
-    window.utils.functions.renderElement(window.utils.mapData.map, renderedMapCard);
+    window.map.appendChild(renderedMapCard);
     document.body.addEventListener('keydown', onDocumentKeydown);
   };
 

@@ -61,8 +61,8 @@
   };
 
   var generateObject = function (num) {
-    var locationX = getRandomNumber(window.utils.constants.MIN_LOCATION_X, window.utils.constants.MAX_LOCATION_X);
-    var locationY = getRandomNumber(window.utils.constants.MIN_LOCATION_Y, window.utils.constants.MAX_LOCATION_Y);
+    var locationX = getRandomNumber(window.utils.MIN_LOCATION_X, window.utils.MAX_LOCATION_X);
+    var locationY = getRandomNumber(window.utils.MIN_LOCATION_Y, window.utils.MAX_LOCATION_Y);
 
     return {
       'author': {

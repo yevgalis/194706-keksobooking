@@ -36,9 +36,14 @@
     return fragment;
   };
 
+  var resetClickedPin = function () {
+    window.pins.clickedPin = null;
+  };
+
   window.pins = {
     clickedPin: clickedPin,
-    createMapPins: createMapPins
+    createMapPins: createMapPins,
+    resetClickedPin: resetClickedPin
   };
 
 })();

@@ -8,15 +8,26 @@
   var MIN_PRICE_FLAT = 1000;
   var MIN_PRICE_HOUSE = 5000;
   var MIN_PRICE_PALACE = 10000;
-  var titleInput = window.utils.forms.adForm.querySelector('#title');
-  var priceInput = window.utils.forms.adForm.querySelector('#price');
-  var typeInput = window.utils.forms.adForm.querySelector('#type');
-  var timeinInput = window.utils.forms.adForm.querySelector('#timein');
-  var timeoutInput = window.utils.forms.adForm.querySelector('#timeout');
-  var roomInput = window.utils.forms.adForm.querySelector('#room_number');
-  var capacityInput = window.utils.forms.adForm.querySelector('#capacity');
-  var submitButton = window.utils.forms.adForm.querySelector('.ad-form__submit');
+  var adForm = document.querySelector('.ad-form');
+  var adFormFieldsets = adForm.querySelectorAll('fieldset');
+  var adFormAddress = adForm.querySelector('#address');
+  var titleInput = adForm.querySelector('#title');
+  var priceInput = adForm.querySelector('#price');
+  var typeInput = adForm.querySelector('#type');
+  var timeinInput = adForm.querySelector('#timein');
+  var timeoutInput = adForm.querySelector('#timeout');
+  var roomInput = adForm.querySelector('#room_number');
+  var capacityInput = adForm.querySelector('#capacity');
+  var submitButton = adForm.querySelector('.ad-form__submit');
+  var mapFiltersForm = document.querySelector('.map__filters');
+  var mapFiltersFormSelects = mapFiltersForm.querySelectorAll('.map__filter');
+  var mapFiltersFormFieldset = mapFiltersForm.querySelector('.map__features');
 
+  var manageFormInputs = function (formElements, isDisabled) {
+    for (var i = 0; i < formElements.length; i++) {
+      formElements[i].disabled = isDisabled;
+    }
+  };
 
   var onFormInputValidation = function (evt) {
     var target = evt.target;
@@ -126,21 +137,30 @@
   };
 
   var onFormSubmit = function () {
-    if (window.utils.forms.adForm.checkValidity()) {
-      window.utils.forms.adFormAddress.disabled = false;
+    if (adForm.checkValidity()) {
+      adFormAddress.disabled = false;
     }
   };
 
+  var activateForms = function () {
+    adForm.classList.remove('ad-form--disabled');
+    manageFormInputs(mapFiltersFormSelects, false);
+    mapFiltersFormFieldset.disabled = false;
+    manageFormInputs(adFormFieldsets, false);
+  };
+
+  var setAdFormAddress = function (x, y) {
+    adFormAddress.value = x + ', ' + y;
+  };
 
   // DISABLE FORM INPUTS WHEN NOT ACTIVE
-  window.utils.functions.manageFormInputs(window.utils.forms.adFormFieldsets, true);
-  window.utils.functions.manageFormInputs(window.utils.forms.mapFiltersFormSelects, true);
-  window.utils.forms.mapFiltersFormFieldset.disabled = true;
+  manageFormInputs(adFormFieldsets, true);
+  manageFormInputs(mapFiltersFormSelects, true);
+  mapFiltersFormFieldset.disabled = true;
 
   // SET DEFUALT FORM INPUTS VALUES IF NEEDED
-  window.utils.forms.adFormAddress.disabled = true;
+  adFormAddress.disabled = true;
   onFormEnableSetGuests();
-
 
   // ADD LISTENERS
   titleInput.addEventListener('invalid', onFormInputValidation);
@@ -156,5 +176,17 @@
   });
   roomInput.addEventListener('input', onFormSelectRoomSet);
   submitButton.addEventListener('click', onFormSubmit);
+
+  window.form = {
+    adForm: adForm,
+    adFormAddress: adFormAddress,
+    adFormFieldsets: adFormFieldsets,
+    mapFiltersForm: mapFiltersForm,
+    mapFiltersFormSelects: mapFiltersFormSelects,
+    mapFiltersFormFieldset: mapFiltersFormFieldset,
+    manageFormInputs: manageFormInputs,
+    activateForms: activateForms,
+    setAdFormAddress: setAdFormAddress
+  };
 
 })();
