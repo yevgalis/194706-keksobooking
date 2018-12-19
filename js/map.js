@@ -11,9 +11,25 @@
   var onMainPinMouseDown = function (evt) {
     evt.preventDefault();
 
+    var showError = function (message) {
+      var errorTemplate = window.form.error.cloneNode(true);
+      var errorTemplateText = errorTemplate.querySelector('.error__message');
+      var errorTemplateButton = errorTemplate.querySelector('.error__button');
+
+      errorTemplateText.textContent = message;
+      errorTemplateButton.textContent = 'Закрыть';
+
+      errorTemplateButton.addEventListener('click', function (errEvt) {
+        errEvt.preventDefault();
+        errorTemplate.remove();
+      });
+
+      document.body.appendChild(errorTemplate);
+    };
+
     map.classList.remove('map--faded');
     window.form.activateForms();
-    mapPins.appendChild(window.pins.create());
+    window.backend.getData(window.pins.create, showError);
 
     var pinCoordinates = {
       x: evt.clientX,
@@ -69,7 +85,9 @@
 
   mainMapPin.addEventListener('mousedown', onMainPinMouseDown);
   window.map = {
-    view: map
+    view: map,
+    pins: mapPins,
+    mainPin: mainMapPin
   };
 
 })();

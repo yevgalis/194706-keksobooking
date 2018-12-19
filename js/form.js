@@ -22,6 +22,8 @@
   var mapFiltersForm = document.querySelector('.map__filters');
   var mapFiltersFormSelects = mapFiltersForm.querySelectorAll('.map__filter');
   var mapFiltersFormFieldset = mapFiltersForm.querySelector('.map__features');
+  var successWindow = document.querySelector('#success').content.querySelector('.success');
+  var errorWindow = document.querySelector('#error').content.querySelector('.error');
 
   var manageFormInputs = function (formElements, isDisabled) {
     for (var i = 0; i < formElements.length; i++) {
@@ -136,10 +138,87 @@
     }
   };
 
-  var onFormSubmit = function () {
-    if (adForm.checkValidity()) {
-      adFormAddress.disabled = false;
+  var showSuccess = function () {
+    var success = successWindow.cloneNode(true);
+
+    var onDocumentClick = function () {
+      success.remove();
+      document.removeEventListener('click', onDocumentClick);
+      document.removeEventListener('keydown', onDocumentKeydown);
+    };
+
+    var onDocumentKeydown = function (evt) {
+      if (evt.keyCode === window.utils.ESC_KEYCODE) {
+        success.remove();
+        document.removeEventListener('click', onDocumentClick);
+        document.removeEventListener('keydown', onDocumentKeydown);
+      }
+    };
+
+    document.addEventListener('click', onDocumentClick);
+    document.addEventListener('keydown', onDocumentKeydown);
+
+    document.body.appendChild(success);
+    submitButton.disabled = false;
+    adForm.reset();
+    resetOnSuccess();
+  };
+
+  var resetOnSuccess = function () {
+    var allPins = document.querySelectorAll('.map__pin:not(.map__pin--main)');
+
+    window.map.view.classList.add('map--faded');
+    window.map.mainPin.style.left = '570px';
+    window.map.mainPin.style.top = '375px';
+    adForm.classList.add('ad-form--disabled');
+    manageFormInputs(mapFiltersFormSelects, true);
+    mapFiltersFormFieldset.disabled = true;
+    manageFormInputs(adFormFieldsets, true);
+
+    for (var i = 0; i < allPins.length; i++) {
+      allPins[i].remove();
     }
+  };
+
+  var showError = function (message) {
+    var err = errorWindow.cloneNode(true);
+    var errMessage = err.querySelector('.error__message');
+    var errButton = err.querySelector('.error__button');
+
+    var onDocumentClick = function () {
+      err.remove();
+      document.removeEventListener('click', onDocumentClick);
+      document.removeEventListener('keydown', onDocumentKeydown);
+    };
+
+    var onDocumentKeydown = function (evt) {
+      if (evt.keyCode === window.utils.ESC_KEYCODE) {
+        err.remove();
+        document.removeEventListener('click', onDocumentClick);
+        document.removeEventListener('keydown', onDocumentKeydown);
+      }
+    };
+
+    errButton.addEventListener('click', function () {
+      err.remove();
+    });
+
+    document.addEventListener('click', onDocumentClick);
+    document.addEventListener('keydown', onDocumentKeydown);
+
+    errMessage.textContent = message;
+    document.body.appendChild(err);
+    submitButton.disabled = false;
+  };
+
+  var onFormSubmit = function (evt) {
+    if (adForm.checkValidity()) {
+      evt.preventDefault();
+      adFormAddress.disabled = false;
+      submitButton.disabled = true;
+      window.backend.sendData(new FormData(adForm), showSuccess, showError);
+    }
+
   };
 
   var activateForms = function () {
@@ -179,7 +258,8 @@
 
   window.form = {
     activateForms: activateForms,
-    setMapAddress: setAdFormAddress
+    setMapAddress: setAdFormAddress,
+    error: errorWindow
   };
 
 })();

@@ -25,15 +25,17 @@
     return newPin;
   };
 
-  var createMapPins = function () {
+  var createMapPins = function (pins) {
     var pinTemplate = document.querySelector('#pin').content.querySelector('.map__pin');
     var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < window.data.length; i++) {
-      fragment.appendChild(generatePin(pinTemplate, window.data[i]));
+    for (var i = 0; i < pins.length; i++) {
+      if (pins[i].hasOwnProperty('offer')) {
+        fragment.appendChild(generatePin(pinTemplate, pins[i]));
+      }
     }
 
-    return fragment;
+    window.map.pins.appendChild(fragment);
   };
 
   var resetClickedPin = function () {
