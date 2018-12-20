@@ -7,43 +7,18 @@
   var RESULT_CODE_OK = 200;
   var TIMEOUT_DURATION = 10000;
 
-  var getData = function (onLoad, onError) {
+  var setXhrRequest = function (onLoad, onError, isGetMethod) {
     var xhr = new XMLHttpRequest();
-
     xhr.responseType = 'json';
 
     xhr.addEventListener('load', function () {
-      if (xhr.status === RESULT_CODE_OK) {
+      if (xhr.status === RESULT_CODE_OK && isGetMethod) {
         onLoad(xhr.response);
-      } else {
+      } else if (xhr.status !== RESULT_CODE_OK && isGetMethod) {
         onError('Ошибка загрузки данных');
-      }
-    });
-
-    xhr.addEventListener('error', function () {
-      onError('Произошла ошибка соединения');
-    });
-
-    xhr.addEventListener('timeout', function () {
-      onError('Запрос не успел выполниться за ' + Math.round(xhr.timeout / 1000) + ' сек');
-      xhr.abort();
-    });
-
-    xhr.timeout = TIMEOUT_DURATION;
-
-    xhr.open('GET', URL_LOAD);
-    xhr.send();
-  };
-
-  var sendData = function (data, onLoad, onError) {
-    var xhr = new XMLHttpRequest();
-
-    xhr.responseType = 'json';
-
-    xhr.addEventListener('load', function () {
-      if (xhr.status === RESULT_CODE_OK) {
+      } else if (xhr.status === RESULT_CODE_OK && !isGetMethod) {
         onLoad();
-      } else {
+      } else if (xhr.status !== RESULT_CODE_OK && !isGetMethod) {
         onError('Ошибка отправки данных');
       }
     });
@@ -58,6 +33,19 @@
     });
 
     xhr.timeout = TIMEOUT_DURATION;
+
+    return xhr;
+  };
+
+  var getData = function (onLoad, onError) {
+    var xhr = setXhrRequest(onLoad, onError, true);
+
+    xhr.open('GET', URL_LOAD);
+    xhr.send();
+  };
+
+  var sendData = function (data, onLoad, onError) {
+    var xhr = setXhrRequest(onLoad, onError, false);
 
     xhr.open('POST', URL_SEND);
     xhr.send(data);

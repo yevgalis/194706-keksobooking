@@ -19,10 +19,27 @@
       errorTemplateText.textContent = message;
       errorTemplateButton.textContent = 'Закрыть';
 
+      var onDocumentClick = function () {
+        errorTemplate.remove();
+        document.removeEventListener('click', onDocumentClick);
+        document.removeEventListener('keydown', onDocumentKeydown);
+      };
+
+      var onDocumentKeydown = function (keyEvt) {
+        if (keyEvt.keyCode === window.utils.ESC_KEYCODE) {
+          errorTemplate.remove();
+          document.removeEventListener('click', onDocumentClick);
+          document.removeEventListener('keydown', onDocumentKeydown);
+        }
+      };
+
       errorTemplateButton.addEventListener('click', function (errEvt) {
         errEvt.preventDefault();
         errorTemplate.remove();
       });
+
+      document.addEventListener('click', onDocumentClick);
+      document.addEventListener('keydown', onDocumentKeydown);
 
       document.body.appendChild(errorTemplate);
     };

@@ -15,10 +15,10 @@
     newPinImg.alt = advertisementItem.offer.title;
 
     newPin.addEventListener('click', function () {
-      if (!window.pins.active || window.pins.active !== newPin) {
+      if (clickedPin || clickedPin !== newPin) {
         window.card.close();
         window.card.render(advertisementItem);
-        window.pins.active = newPin;
+        clickedPin = newPin;
       }
     });
 
@@ -39,11 +39,10 @@
   };
 
   var resetClickedPin = function () {
-    window.pins.active = null;
+    clickedPin = null;
   };
 
   window.pins = {
-    active: clickedPin,
     create: createMapPins,
     reset: resetClickedPin
   };

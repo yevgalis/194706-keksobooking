@@ -8,6 +8,8 @@
   var MIN_PRICE_FLAT = 1000;
   var MIN_PRICE_HOUSE = 5000;
   var MIN_PRICE_PALACE = 10000;
+  var MAIN_PIN_START_X = window.map.mainPin.style.left;
+  var MAIN_PIN_START_Y = window.map.mainPin.style.top;
   var adForm = document.querySelector('.ad-form');
   var adFormFieldsets = adForm.querySelectorAll('fieldset');
   var adFormAddress = adForm.querySelector('#address');
@@ -138,18 +140,29 @@
     }
   };
 
-  var showSuccess = function () {
-    var success = successWindow.cloneNode(true);
+  var deleteSuccessErrorElement = function () {
+    var successElement = document.querySelector('.success');
+    var errorElement = document.querySelector('.error');
 
+    if (successElement) {
+      successElement.remove();
+    }
+
+    if (errorElement) {
+      errorElement.remove();
+    }
+  };
+
+  var addRemoveDocumentListeners = function () {
     var onDocumentClick = function () {
-      success.remove();
+      deleteSuccessErrorElement();
       document.removeEventListener('click', onDocumentClick);
       document.removeEventListener('keydown', onDocumentKeydown);
     };
 
     var onDocumentKeydown = function (evt) {
       if (evt.keyCode === window.utils.ESC_KEYCODE) {
-        success.remove();
+        deleteSuccessErrorElement();
         document.removeEventListener('click', onDocumentClick);
         document.removeEventListener('keydown', onDocumentKeydown);
       }
@@ -157,19 +170,26 @@
 
     document.addEventListener('click', onDocumentClick);
     document.addEventListener('keydown', onDocumentKeydown);
+  };
 
+
+  var showSuccess = function () {
+    var success = successWindow.cloneNode(true);
+
+    addRemoveDocumentListeners();
     document.body.appendChild(success);
     submitButton.disabled = false;
-    adForm.reset();
     resetOnSuccess();
   };
 
   var resetOnSuccess = function () {
     var allPins = document.querySelectorAll('.map__pin:not(.map__pin--main)');
 
+    adForm.reset();
+    window.card.close();
     window.map.view.classList.add('map--faded');
-    window.map.mainPin.style.left = '570px';
-    window.map.mainPin.style.top = '375px';
+    window.map.mainPin.style.left = MAIN_PIN_START_X;
+    window.map.mainPin.style.top = MAIN_PIN_START_Y;
     adForm.classList.add('ad-form--disabled');
     manageFormInputs(mapFiltersFormSelects, true);
     mapFiltersFormFieldset.disabled = true;
@@ -185,27 +205,11 @@
     var errMessage = err.querySelector('.error__message');
     var errButton = err.querySelector('.error__button');
 
-    var onDocumentClick = function () {
-      err.remove();
-      document.removeEventListener('click', onDocumentClick);
-      document.removeEventListener('keydown', onDocumentKeydown);
-    };
-
-    var onDocumentKeydown = function (evt) {
-      if (evt.keyCode === window.utils.ESC_KEYCODE) {
-        err.remove();
-        document.removeEventListener('click', onDocumentClick);
-        document.removeEventListener('keydown', onDocumentKeydown);
-      }
-    };
-
     errButton.addEventListener('click', function () {
       err.remove();
     });
 
-    document.addEventListener('click', onDocumentClick);
-    document.addEventListener('keydown', onDocumentKeydown);
-
+    addRemoveDocumentListeners();
     errMessage.textContent = message;
     document.body.appendChild(err);
     submitButton.disabled = false;
