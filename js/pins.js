@@ -15,33 +15,34 @@
     newPinImg.alt = advertisementItem.offer.title;
 
     newPin.addEventListener('click', function () {
-      if (!window.pins.active || window.pins.active !== newPin) {
+      if (clickedPin || clickedPin !== newPin) {
         window.card.close();
         window.card.render(advertisementItem);
-        window.pins.active = newPin;
+        clickedPin = newPin;
       }
     });
 
     return newPin;
   };
 
-  var createMapPins = function () {
+  var createMapPins = function (pins) {
     var pinTemplate = document.querySelector('#pin').content.querySelector('.map__pin');
     var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < window.data.length; i++) {
-      fragment.appendChild(generatePin(pinTemplate, window.data[i]));
+    for (var i = 0; i < pins.length; i++) {
+      if (pins[i].hasOwnProperty('offer')) {
+        fragment.appendChild(generatePin(pinTemplate, pins[i]));
+      }
     }
 
-    return fragment;
+    window.map.pins.appendChild(fragment);
   };
 
   var resetClickedPin = function () {
-    window.pins.active = null;
+    clickedPin = null;
   };
 
   window.pins = {
-    active: clickedPin,
     create: createMapPins,
     reset: resetClickedPin
   };
