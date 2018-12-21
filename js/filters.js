@@ -21,7 +21,7 @@
   };
 
   var getFilterValues = function () {
-    var soughtValues = {
+    var filterValues = {
       housingType: ANY_VALUE,
       housingPrice: ANY_VALUE,
       housingRooms: ANY_VALUE,
@@ -29,22 +29,22 @@
       housingFeatures: []
     };
 
-    soughtValues.housingType = housingTypeFilter.value;
-    soughtValues.housingPrice = housingPriceFilter.value;
-    soughtValues.housingRooms = housingRoomsFilter.value;
-    soughtValues.housingGuests = housingGuestsFilter.value;
+    filterValues.housingType = housingTypeFilter.value;
+    filterValues.housingPrice = housingPriceFilter.value;
+    filterValues.housingRooms = housingRoomsFilter.value;
+    filterValues.housingGuests = housingGuestsFilter.value;
 
     featuresList.forEach(function (input) {
       if (input.checked) {
-        soughtValues.housingFeatures.push(input.value);
+        filterValues.housingFeatures.push(input.value);
       }
     });
 
-    return soughtValues;
+    return filterValues;
   };
 
   var filterData = function () {
-    var dataCopy = window.utils.data.slice();
+    var dataCopy = window.utils.pins.slice();
     var filterValues = getFilterValues();
 
     var checkPrice = function (item) {
@@ -85,7 +85,7 @@
         return filterValues.housingFeatures.every(function (featureItem) {
           return item.offer.features.includes(featureItem);
         });
-      }).slice(0, 5);
+      });
 
     removeMapPins();
     window.card.close();

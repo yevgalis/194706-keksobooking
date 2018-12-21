@@ -28,11 +28,11 @@
   var createFeatureItems = function (features) {
     var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < features.length; i++) {
+    features.forEach(function (item) {
       var featureItem = document.createElement('li');
-      featureItem.classList.add('popup__feature', 'popup__feature--' + features[i]);
+      featureItem.classList.add('popup__feature', 'popup__feature--' + item);
       fragment.appendChild(featureItem);
-    }
+    });
 
     return fragment;
   };
@@ -40,19 +40,25 @@
   var createPhotoItems = function (arr, source) {
     var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < arr.length; i++) {
+    arr.forEach(function (item) {
       var photoItem = source.cloneNode(true);
-      photoItem.src = arr[i];
+      photoItem.src = item;
       fragment.appendChild(photoItem);
-    }
+    });
 
     return fragment;
   };
 
   var closeCard = function () {
+    var activePin = document.querySelector('.map__pin--active');
+
     if (renderedMapCard) {
       renderedMapCard.remove();
       window.pins.reset();
+
+      if (activePin) {
+        activePin.classList.remove('map__pin--active');
+      }
     }
   };
 

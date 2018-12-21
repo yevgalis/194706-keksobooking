@@ -19,6 +19,7 @@
   var roomInput = adForm.querySelector('#room_number');
   var capacityInput = adForm.querySelector('#capacity');
   var submitButton = adForm.querySelector('.ad-form__submit');
+  var resetButton = adForm.querySelector('.ad-form__reset');
   var mapFiltersForm = document.querySelector('.map__filters');
   var mapFiltersFormSelects = mapFiltersForm.querySelectorAll('.map__filter');
   var mapFiltersFormFieldset = mapFiltersForm.querySelector('.map__features');
@@ -26,9 +27,9 @@
   var errorWindow = document.querySelector('#error').content.querySelector('.error');
 
   var manageFormInputs = function (formElements, isDisabled) {
-    for (var i = 0; i < formElements.length; i++) {
-      formElements[i].disabled = isDisabled;
-    }
+    formElements.forEach(function (element) {
+      element.disabled = isDisabled;
+    });
   };
 
   var onFormInputValidation = function (evt) {
@@ -176,10 +177,10 @@
     toggleDocumentListeners();
     document.body.appendChild(success);
     submitButton.disabled = false;
-    resetOnSuccess();
+    onFormReset();
   };
 
-  var resetOnSuccess = function () {
+  var onFormReset = function () {
     var allPins = document.querySelectorAll('.map__pin:not(.map__pin--main)');
 
     adForm.reset();
@@ -191,9 +192,9 @@
     mapFiltersFormFieldset.disabled = true;
     manageFormInputs(adFormFieldsets, true);
 
-    for (var i = 0; i < allPins.length; i++) {
-      allPins[i].remove();
-    }
+    allPins.forEach(function (pin) {
+      pin.remove();
+    });
   };
 
   var showError = function (message) {
@@ -255,6 +256,7 @@
   });
   roomInput.addEventListener('input', onFormSelectRoomSet);
   submitButton.addEventListener('click', onFormSubmit);
+  resetButton.addEventListener('click', onFormReset);
 
   window.form = {
     activateForms: activateForms,
