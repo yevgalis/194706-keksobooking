@@ -8,8 +8,6 @@
   var MIN_PRICE_FLAT = 1000;
   var MIN_PRICE_HOUSE = 5000;
   var MIN_PRICE_PALACE = 10000;
-  var MAIN_PIN_START_X = window.map.mainPin.style.left;
-  var MAIN_PIN_START_Y = window.map.mainPin.style.top;
   var adForm = document.querySelector('.ad-form');
   var adFormFieldsets = adForm.querySelectorAll('fieldset');
   var adFormAddress = adForm.querySelector('#address');
@@ -21,6 +19,7 @@
   var roomInput = adForm.querySelector('#room_number');
   var capacityInput = adForm.querySelector('#capacity');
   var submitButton = adForm.querySelector('.ad-form__submit');
+  var resetButton = adForm.querySelector('.ad-form__reset');
   var mapFiltersForm = document.querySelector('.map__filters');
   var mapFiltersFormSelects = mapFiltersForm.querySelectorAll('.map__filter');
   var mapFiltersFormFieldset = mapFiltersForm.querySelector('.map__features');
@@ -28,9 +27,9 @@
   var errorWindow = document.querySelector('#error').content.querySelector('.error');
 
   var manageFormInputs = function (formElements, isDisabled) {
-    for (var i = 0; i < formElements.length; i++) {
-      formElements[i].disabled = isDisabled;
-    }
+    formElements.forEach(function (element) {
+      element.disabled = isDisabled;
+    });
   };
 
   var onFormInputValidation = function (evt) {
@@ -140,31 +139,30 @@
     }
   };
 
-  var deleteSuccessErrorElement = function () {
-    var successElement = document.querySelector('.success');
-    var errorElement = document.querySelector('.error');
+  var toggleDocumentListeners = function () {
+    var deleteMessageElement = function () {
+      var successElement = document.querySelector('.success');
+      var errorElement = document.querySelector('.error');
 
-    if (successElement) {
-      successElement.remove();
-    }
+      if (successElement) {
+        successElement.remove();
+      }
 
-    if (errorElement) {
-      errorElement.remove();
-    }
-  };
+      if (errorElement) {
+        errorElement.remove();
+      }
 
-  var addRemoveDocumentListeners = function () {
-    var onDocumentClick = function () {
-      deleteSuccessErrorElement();
       document.removeEventListener('click', onDocumentClick);
       document.removeEventListener('keydown', onDocumentKeydown);
     };
 
+    var onDocumentClick = function () {
+      deleteMessageElement();
+    };
+
     var onDocumentKeydown = function (evt) {
       if (evt.keyCode === window.utils.ESC_KEYCODE) {
-        deleteSuccessErrorElement();
-        document.removeEventListener('click', onDocumentClick);
-        document.removeEventListener('keydown', onDocumentKeydown);
+        deleteMessageElement();
       }
     };
 
@@ -176,28 +174,27 @@
   var showSuccess = function () {
     var success = successWindow.cloneNode(true);
 
-    addRemoveDocumentListeners();
+    toggleDocumentListeners();
     document.body.appendChild(success);
     submitButton.disabled = false;
-    resetOnSuccess();
+    onFormReset();
   };
 
-  var resetOnSuccess = function () {
+  var onFormReset = function () {
     var allPins = document.querySelectorAll('.map__pin:not(.map__pin--main)');
 
     adForm.reset();
     window.card.close();
-    window.map.view.classList.add('map--faded');
-    window.map.mainPin.style.left = MAIN_PIN_START_X;
-    window.map.mainPin.style.top = MAIN_PIN_START_Y;
+    window.map.hide();
+    window.map.setMainPinDefaultPosition();
     adForm.classList.add('ad-form--disabled');
     manageFormInputs(mapFiltersFormSelects, true);
     mapFiltersFormFieldset.disabled = true;
     manageFormInputs(adFormFieldsets, true);
 
-    for (var i = 0; i < allPins.length; i++) {
-      allPins[i].remove();
-    }
+    allPins.forEach(function (pin) {
+      pin.remove();
+    });
   };
 
   var showError = function (message) {
@@ -209,7 +206,7 @@
       err.remove();
     });
 
-    addRemoveDocumentListeners();
+    toggleDocumentListeners();
     errMessage.textContent = message;
     document.body.appendChild(err);
     submitButton.disabled = false;
@@ -259,6 +256,7 @@
   });
   roomInput.addEventListener('input', onFormSelectRoomSet);
   submitButton.addEventListener('click', onFormSubmit);
+  resetButton.addEventListener('click', onFormReset);
 
   window.form = {
     activateForms: activateForms,

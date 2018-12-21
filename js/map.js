@@ -7,6 +7,17 @@
   var map = document.querySelector('.map');
   var mapPins = map.querySelector('.map__pins');
   var mainMapPin = mapPins.querySelector('.map__pin--main');
+  var MAIN_PIN_START_X = mainMapPin.style.left;
+  var MAIN_PIN_START_Y = mainMapPin.style.top;
+
+  var hideMap = function () {
+    map.classList.add('map--faded');
+  };
+
+  var setMainPinDefaultPosition = function () {
+    mainMapPin.style.left = MAIN_PIN_START_X;
+    mainMapPin.style.top = MAIN_PIN_START_Y;
+  };
 
   var onMainPinMouseDown = function (evt) {
     evt.preventDefault();
@@ -19,17 +30,19 @@
       errorTemplateText.textContent = message;
       errorTemplateButton.textContent = 'Закрыть';
 
-      var onDocumentClick = function () {
+      var deleteErrorMessage = function () {
         errorTemplate.remove();
         document.removeEventListener('click', onDocumentClick);
         document.removeEventListener('keydown', onDocumentKeydown);
       };
 
+      var onDocumentClick = function () {
+        deleteErrorMessage();
+      };
+
       var onDocumentKeydown = function (keyEvt) {
         if (keyEvt.keyCode === window.utils.ESC_KEYCODE) {
-          errorTemplate.remove();
-          document.removeEventListener('click', onDocumentClick);
-          document.removeEventListener('keydown', onDocumentKeydown);
+          deleteErrorMessage();
         }
       };
 
@@ -104,7 +117,9 @@
   window.map = {
     view: map,
     pins: mapPins,
-    mainPin: mainMapPin
+    mainPin: mainMapPin,
+    setMainPinDefaultPosition: setMainPinDefaultPosition,
+    hide: hideMap
   };
 
 })();

@@ -4,6 +4,7 @@
 
   var PIN_WIDTH = 50;
   var PIN_HEIGHT = 70;
+  var MAX_PINS_QUANTITY = 5;
   var clickedPin;
 
   var generatePin = function (pinTemplate, advertisementItem) {
@@ -19,6 +20,7 @@
         window.card.close();
         window.card.render(advertisementItem);
         clickedPin = newPin;
+        clickedPin.classList.add('map__pin--active');
       }
     });
 
@@ -29,7 +31,11 @@
     var pinTemplate = document.querySelector('#pin').content.querySelector('.map__pin');
     var fragment = document.createDocumentFragment();
 
-    for (var i = 0; i < pins.length; i++) {
+    if (window.utils.pins.length === 0) {
+      window.utils.pins = pins;
+    }
+
+    for (var i = 0; i < pins.slice(0, MAX_PINS_QUANTITY).length; i++) {
       if (pins[i].hasOwnProperty('offer')) {
         fragment.appendChild(generatePin(pinTemplate, pins[i]));
       }
