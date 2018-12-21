@@ -9,7 +9,8 @@
     MAX_LOCATION_X: mapPinsBlock.clientWidth,
     MIN_LOCATION_Y: 130,
     MAX_LOCATION_Y: 630,
-    ESC_KEYCODE: 27
+    ESC_KEYCODE: 27,
+    data: []
   };
 
 })();
