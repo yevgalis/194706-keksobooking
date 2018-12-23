@@ -47,6 +47,10 @@
     var dataCopy = window.utils.pins.slice();
     var filterValues = getFilterValues();
 
+    var checkHousingType = function (item) {
+      return item.offer.type === filterValues.housingType || filterValues.housingType === ANY_VALUE;
+    };
+
     var checkPrice = function (item) {
       var price = false;
 
@@ -68,24 +72,23 @@
       return price;
     };
 
-    var filteredItems = dataCopy
-      .filter(function (item) {
-        return item.offer.type === filterValues.housingType || filterValues.housingType === ANY_VALUE;
-      })
-      .filter(function (item) {
-        return checkPrice(item);
-      })
-      .filter(function (item) {
-        return item.offer.rooms === parseInt(filterValues.housingRooms, 0) || filterValues.housingRooms === ANY_VALUE;
-      })
-      .filter(function (item) {
-        return item.offer.guests <= parseInt(filterValues.housingGuests, 0) || filterValues.housingGuests === ANY_VALUE;
-      })
-      .filter(function (item) {
-        return filterValues.housingFeatures.every(function (featureItem) {
-          return item.offer.features.includes(featureItem);
-        });
+    var checkHousingRooms = function (item) {
+      return item.offer.rooms === parseInt(filterValues.housingRooms, 0) || filterValues.housingRooms === ANY_VALUE;
+    };
+
+    var checkHousingGuests = function (item) {
+      return item.offer.guests <= parseInt(filterValues.housingGuests, 0) || filterValues.housingGuests === ANY_VALUE;
+    };
+
+    var checkFeatures = function (item) {
+      return filterValues.housingFeatures.every(function (featureItem) {
+        return item.offer.features.includes(featureItem);
       });
+    };
+
+    var filteredItems = dataCopy.filter(function (item) {
+      return checkHousingType(item) && checkPrice(item) && checkHousingRooms(item) && checkHousingGuests(item) && checkFeatures(item);
+    });
 
     removeMapPins();
     window.card.close();
