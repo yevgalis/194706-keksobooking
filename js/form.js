@@ -8,6 +8,7 @@
   var MIN_PRICE_FLAT = 1000;
   var MIN_PRICE_HOUSE = 5000;
   var MIN_PRICE_PALACE = 10000;
+  var DEFUALT_AVATAR = 'img/muffin-grey.svg';
   var adForm = document.querySelector('.ad-form');
   var adFormFieldsets = adForm.querySelectorAll('fieldset');
   var adFormAddress = adForm.querySelector('#address');
@@ -182,6 +183,8 @@
 
   var onFormReset = function () {
     var allPins = document.querySelectorAll('.map__pin:not(.map__pin--main)');
+    var avatarImage = document.querySelector('.ad-form-header__preview img');
+    var housingPhotos = document.querySelectorAll('.ad-form__photo-img');
 
     adForm.reset();
     window.card.close();
@@ -191,8 +194,13 @@
     manageFormInputs(mapFiltersFormSelects, true);
     mapFiltersFormFieldset.disabled = true;
     manageFormInputs(adFormFieldsets, true);
+    avatarImage.src = DEFUALT_AVATAR;
 
     allPins.forEach(function (pin) {
+      pin.remove();
+    });
+
+    housingPhotos.forEach(function (pin) {
       pin.remove();
     });
   };
