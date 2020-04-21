@@ -2,7 +2,7 @@
 
 (function () {
 
-  var URL_LOAD = 'https://js.dump.academy/keksobooking/data';
+  var URL_LOAD = 'https://cors-anywhere.herokuapp.com/https://js.dump.academy/keksobooking/data';
   var URL_SEND = 'https://js.dump.academy/keksobooking';
   var RESULT_CODE_OK = 200;
   var TIMEOUT_DURATION = 10000;
